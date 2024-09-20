@@ -27,6 +27,16 @@ const gameSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
+    main_photo: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    photos: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     release_date: {
       type: Date,
       required: true,

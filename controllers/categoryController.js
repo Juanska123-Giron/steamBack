@@ -1,5 +1,15 @@
 import Category from "../models/category.js";
 
+const allCategory = async (req, res) => {
+  try {
+    const categories = await Category.find();
+    res.json(categories);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "There was an error getting the categories" });
+  }
+}
+
 const newCategory = async (req, res) => {
   //Avoid double inserts
   const { category_name } = req.body;
@@ -53,4 +63,4 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-export { newCategory, deleteCategory };
+export { newCategory, allCategory, deleteCategory };

@@ -2,12 +2,19 @@ import Game from "../models/game.js";
 
 const getAllGames = async (req, res) => {
   try {
-    const games = await Game.find();
+    const { category } = req.query; // Obtener el parámetro de categoría de la consulta
+    let query = {};
+
+    if (category) {
+      query.id_category = category; // Filtrar por la categoría, ajusta según tu esquema
+    }
+
+    const games = await Game.find(query); // Realizar la consulta filtrada o sin filtro
     res.status(200).json(games);
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      mensaje: "Error getting all games",
+      mensaje: "Error getting games",
     });
   }
 };

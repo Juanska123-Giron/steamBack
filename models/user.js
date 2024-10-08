@@ -3,11 +3,13 @@ import bcrypt from "bcrypt";
 
 const userSchema = mongoose.Schema(
   {
-    // Id_UserCard: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'UserCard',
-    //     required: true,
-    // },
+    payments_cards: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "PaymentCard",
+        required: false,
+      },
+    ],
 
     // Id_library: {
     //     type: mongoose.Schema.Types.ObjectId,
@@ -36,22 +38,29 @@ const userSchema = mongoose.Schema(
       required: true,
     },
     cellphone_number: {
-      type: Number, // En JavaScript se usa Number en lugar de  'int'
+      type: Number, // In JavaScript you use Number instead of Int
       required: true,
     },
-    //Se puede usar como otra tabla para los códigos del país
-    country: {
-      type: String,
+    //
+    country_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Country",
       required: true,
-      trim: true,
+    },
+    token: {
+      type: String,
+    },
+    confirmed: {
+      type: Boolean,
+      default: false,
     },
   },
   {
-    timestamps: true, // Añade automáticamente campos createdAt y updatedAt
+    timestamps: true, // Adds automatically the createdAt and updatedAt fields
   }
 );
 
-// Middleware para encriptar la contraseña antes de guardarla
+// Middleware to encrypt the password
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
@@ -60,7 +69,7 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Método para verificar la contraseña
+// Method to verify the password
 userSchema.methods.verifyPassword = async function (passwordForm) {
   return await bcrypt.compare(passwordForm, this.password);
 };

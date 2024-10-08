@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
 
-const gameSchema = mongoose.Schema(
+const gameSchema = new mongoose.Schema(
   {
-    id_requirements: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Requirements',
-      required: true,
-    },
+    //   id_requirments: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "Requirments",
+    //     required: true,
+    //   },
+
     id_category: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Category',
+      ref: "Category",
       required: true,
     },
     game_name: {
@@ -27,34 +28,26 @@ const gameSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    main_photo: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     photos: {
-      type: String,
+      type: [String], //To use cloud, importing images with URLs
       required: true,
-      trim: true,
     },
     release_date: {
       type: Date,
       required: true,
-      trim: true,
     },
     price: {
       type: Number,
       required: true,
-      trim: true,
     },
-    archivo: {
+
+    file: {
       type: String,
       required: true,
-      trim: true,
     },
   },
   {
-    timestamps: true, // Añade automáticamente campos createdAt y updatedAt
+    timestamps: true,
   }
 );
 

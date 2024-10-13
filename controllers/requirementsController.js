@@ -1,5 +1,28 @@
 import Requirements from "../models/requirements.js";
 
+const getRequirement = async (req, res) => {
+  const gameId = req.params.id;
+  try {
+    const requirement = await Requirements.findById(gameId);
+
+    if (!requirement) {
+      return res.status(404).json({
+        msj: "Requirement not found",
+      });
+    }
+
+    res.json({
+      msj: "Requirement found successfully",
+      requirement,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msj: "Error retrieving the requirement",
+    });
+  }
+};
+
 //Post request
 
 const newRequirement = async (req, res) => {
@@ -55,4 +78,4 @@ const deleteRequirement = async (req, res) => {
   }
 };
 
-export { newRequirement, deleteRequirement };
+export { newRequirement, deleteRequirement, getRequirement };

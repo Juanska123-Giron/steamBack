@@ -13,6 +13,11 @@ const gameSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
+    id_requirements: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Requirements",
+      required: true
+    },
     game_name: {
       type: String,
       required: true,
@@ -29,7 +34,7 @@ const gameSchema = new mongoose.Schema(
       trim: true,
     },
     photos: {
-      type: [String], //To use cloud, importing images with URLs
+      type: [String],
       required: true,
     },
     release_date: {

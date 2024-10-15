@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const gameSchema = new mongoose.Schema(
   {
-    //   id_requirments: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Requirments",
-    //     required: true,
-    //   },
+    id_requirements: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Requirements",
+      required: false,
+    },
 
     id_category: {
       type: mongoose.Schema.Types.ObjectId,

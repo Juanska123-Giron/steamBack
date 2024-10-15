@@ -53,4 +53,24 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-export { newCategory, deleteCategory };
+const fetchCategories = async (req, res) => {
+  try {
+    // Get all categories
+    const categories = await Category.find();
+
+    // Verify whether there area more than 2 catergories
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({ msg: "No categories found" });
+    }
+
+    // Return the categories
+    res.status(200).json(categories);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error fetching categories",
+    });
+  }
+};
+
+export { newCategory, deleteCategory, fetchCategories };

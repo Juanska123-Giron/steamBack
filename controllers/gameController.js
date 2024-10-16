@@ -12,10 +12,7 @@ const getAllGames = async (req, res) => {
     // Realizar la consulta inicial
     const gamesQuery = Game.find(query)
       .populate("id_category", "category_name")
-      .populate(
-        "id_requirements",
-        "platform processor memory graphics storage"
-      );
+      .populate("id_requirements", "platform processor memory graphics storage");
 
     const games = await gamesQuery.exec(); // Ejecutar la consulta
 
@@ -140,6 +137,8 @@ const editGame = async (req, res) => {
   }
 };
 
-const addRequirementsToGame = (req, res) => {};
+const addRequirementsToGame = (req, res) => {
+  //New requirement
+};
 
 export { getAllGames, newGame, deleteGame, editGame };

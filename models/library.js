@@ -16,6 +16,7 @@ const librarySchema = mongoose.Schema(
 
         title: String, // Título del juego
         price: Number,
+        photos: [String],
       },
     ],
   },

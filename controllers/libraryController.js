@@ -28,6 +28,7 @@ const addToLibrary = async (userId, gameId) => {
         gameId: gameInfo._id,
         title: gameInfo.game_name,
         price: gameInfo.price,
+        photos: gameInfo.photos, // Aquí añadimos las fotos del juego
       });
       await library.save();
       console.log(`Juego ${gameInfo.game_name} añadido a la biblioteca`);
@@ -38,16 +39,17 @@ const addToLibrary = async (userId, gameId) => {
     console.error("Error al añadir juego a la biblioteca:", error);
     throw new Error("Error al añadir juego a la biblioteca: " + error.message);
   }
-  
 };
-
 
 
 // Obtener los juegos en la biblioteca del usuario
 const getUserLibrary = async (req, res) => {
   try {
     const userId = req.user._id;
-    const library = await Library.findOne({ user: userId }).populate("games");
+    const library = await Library.findOne({ user: userId }).populate({
+      path: 'games.gameId', // Asegúrate de que el path corresponde a la propiedad de tu modelo
+      select: 'game_name price photos', // Selecciona solo los campos necesarios
+    });
 
     if (!library) {
       return res

@@ -22,13 +22,21 @@ const addToLibrary = async (userId, gameId) => {
     }
 
     // Verifica si el juego ya está en la biblioteca
-    const gameExists = library.games.some(game => game && game.gameId && game.gameId.toString() === gameId);
+    const gameExists = library.games.some(
+      (game) => game && game.gameId && game.gameId.toString() === gameId
+    );
     if (!gameExists) {
       library.games.push({
         gameId: gameInfo._id,
         title: gameInfo.game_name,
         price: gameInfo.price,
         photos: gameInfo.photos, // Aquí añadimos las fotos del juego
+        description: gameInfo.description,
+        developer: gameInfo.developer,
+        release_date: gameInfo.release_date,
+        file: gameInfo.file,
+        id_category: gameInfo.id_category,
+        id_requirements: gameInfo.id_requirements,
       });
       await library.save();
       console.log(`Juego ${gameInfo.game_name} añadido a la biblioteca`);
@@ -41,14 +49,13 @@ const addToLibrary = async (userId, gameId) => {
   }
 };
 
-
 // Obtener los juegos en la biblioteca del usuario
 const getUserLibrary = async (req, res) => {
   try {
     const userId = req.user._id;
     const library = await Library.findOne({ user: userId }).populate({
-      path: 'games.gameId', // Asegúrate de que el path corresponde a la propiedad de tu modelo
-      select: 'game_name price photos', // Selecciona solo los campos necesarios
+      path: "games.gameId", // Asegúrate de que el path corresponde a la propiedad de tu modelo
+      select: "game_name price photos", // Selecciona solo los campos necesarios
     });
 
     if (!library) {

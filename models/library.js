@@ -17,6 +17,18 @@ const librarySchema = mongoose.Schema(
         title: String, // Título del juego
         price: Number,
         photos: [String],
+        description: String,
+        developer: String,
+        release_date: Date,
+        file: String,
+        id_category: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Category",
+        },
+        id_requirements: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Requirements",
+        },
       },
     ],
   },

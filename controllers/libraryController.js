@@ -1,90 +1,73 @@
 import Library from "../models/library.js";
 import Game from "../models/game.js";
+import User from "../models/user.js";
 
-const createLibrary = async (req, res) => {
-  // Getting the authenticated user's ID from checkAuth middleware
-  const userId = req.user._id;
-
-  const { gameIds } = req.body;
-
+const addToLibrary = async (userId, gameId) => {
   try {
-    // checking if the user already has a library
-    const existingLibrary = await Library.findOne({ user: userId });
-
-    if (existingLibrary) {
-      return res.status(400).json({ msg: "Already have a library, add some games" });
+    const gameInfo = await Game.findById(gameId);
+    if (!gameInfo) {
+      throw new Error("Juego no encontrado");
     }
 
-    // Verify if the games exist in the database
-    const games = await Game.find({ _id: { $in: gameIds } });
-    if (games.length !== gameIds.length) {
-      return res.status(404).json({ msg: "One or more games not found" });
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("Usuario no encontrado");
     }
 
-    const newLibrary = new Library({
-      user: userId,
-      games: gameIds,
-    });
+    // Busca o crea una biblioteca para el usuario
+    let library = await Library.findOne({ user: userId });
 
-    const savedLibrary = await newLibrary.save();
-
-    // Respond with success and the created library
-    res.status(201).json({
-      msg: "Library created successfully",
-      library: savedLibrary,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error creating the library",
-    });
-  }
-};
-
-const AddGamesToLibrary = async (req, res) => {
-  // Authenticated user's ID from checkAuth middleware
-  const userId = req.user._id;
-  const { gameIds } = req.body;
-
-  try {
-    const existingLibrary = await Library.findOne({ user: userId });
-
-    if (!existingLibrary) {
-      return res.status(404).json({ msg: "Library not found, please create one first" });
+    if (!library) {
+      library = new Library({ user: userId, games: [] });
     }
 
-    // Filter out any games that are already in the user's library
-    const newGames = gameIds.filter((gameId) => !existingLibrary.games.includes(gameId));
-
-    if (newGames.length === 0) {
-      return res.status(400).json({
-        msg: "All games are already in your library",
+    // Verifica si el juego ya está en la biblioteca
+    const gameExists = library.games.some(
+      (game) => game && game.gameId && game.gameId.toString() === gameId
+    );
+    if (!gameExists) {
+      library.games.push({
+        gameId: gameInfo._id,
+        title: gameInfo.game_name,
+        price: gameInfo.price,
+        photos: gameInfo.photos, // Aquí añadimos las fotos del juego
+        description: gameInfo.description,
+        developer: gameInfo.developer,
+        release_date: gameInfo.release_date,
+        file: gameInfo.file,
+        id_category: gameInfo.id_category,
+        id_requirements: gameInfo.id_requirements,
       });
+      await library.save();
+      console.log(`Juego ${gameInfo.game_name} añadido a la biblioteca`);
+    } else {
+      console.log(`El juego ${gameInfo.game_name} ya está en la biblioteca`);
     }
-
-    // Verify if the new game IDs exist in the database
-    const games = await Game.find({ _id: { $in: newGames } });
-    if (games.length !== newGames.length) {
-      return res.status(404).json({ msg: "One or more games not found" });
-    }
-
-    // Add the new games to the library
-    existingLibrary.games.push(...newGames);
-
-    // Save the updated library
-    const updatedLibrary = await existingLibrary.save();
-
-    // Return success message and the updated library
-    res.status(200).json({
-      msg: "Games added to your library",
-      library: updatedLibrary,
-    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msg: "Error adding games to the library",
-    });
+    console.error("Error al añadir juego a la biblioteca:", error);
+    throw new Error("Error al añadir juego a la biblioteca: " + error.message);
   }
 };
 
-export { createLibrary, AddGamesToLibrary };
+// Obtener los juegos en la biblioteca del usuario
+const getUserLibrary = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const library = await Library.findOne({ user: userId }).populate({
+      path: "games.gameId",
+      select: "game_name price photos",
+    });
+
+    if (!library) {
+      return res.status(404).json({ msg: "No se encontró la biblioteca del usuario" });
+    }
+
+    console.log('Library data:', library); // Agrega esto para verificar la estructura
+    res.json(library);
+  } catch (error) {
+    res.status(500).json({ msg: "Error al obtener la biblioteca", error: error.message });
+  }
+};
+
+
+export { addToLibrary, getUserLibrary };

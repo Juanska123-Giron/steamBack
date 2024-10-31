@@ -13,12 +13,11 @@ const paymentCardSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    //According to the PCI DSS (Payment Card Industry Data Security Standard) you never storage this
-    // cvc: {
-    //   type: String,
-    //   required: true,
-    //   trim: true,
-    // },
+    cvc: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     expiration_date: {
       type: Date,
       required: true,

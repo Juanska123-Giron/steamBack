@@ -1,10 +1,10 @@
 import express from "express";
+import { getUserLibrary } from "../controllers/libraryController.js";
 import checkAuth from "../middleware/checkAuth.js";
-import { createLibrary, AddGamesToLibrary } from "../controllers/libraryController.js";
 
 const router = express.Router();
 
-router.post("/create/", checkAuth, createLibrary);
-router.post("/addGames/", checkAuth, AddGamesToLibrary);
+// Ruta para obtener la biblioteca del usuario
+router.get("/", checkAuth, getUserLibrary);
 
 export default router;

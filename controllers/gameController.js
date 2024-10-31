@@ -3,14 +3,24 @@ import Requirements from "../models/requirements.js";
 
 const getAllGames = async (req, res) => {
   try {
-    const { category } = req.query; // Obtener el parámetro de categoría de la consulta
+    const { category, includeRequirements } = req.query; // Obtener los parámetros de consulta
     let query = {};
 
     if (category) {
-      query.id_category = category; // Filtrar por la categoría, ajusta según tu esquema
+      query.id_category = category; // Filtrar por la categoría
     }
 
-    const games = await Game.find(query); // Realizar la consulta filtrada o sin filtro
+    // Realizar la consulta inicial
+    const gamesQuery = Game.find(query)
+      .populate("id_category", "category_name")
+      .populate(
+        "id_requirements",
+        "platform processor memory graphics storage"
+      );
+
+    const games = await gamesQuery.exec(); // Ejecutar la consulta
+    console.log("Games fetched:", games);
+
     res.status(200).json(games);
   } catch (error) {
     console.log(error);
@@ -23,8 +33,16 @@ const getAllGames = async (req, res) => {
 const newGame = async (req, res) => {
   console.log(req.body);
   try {
-    const { game_name, description, developer, photos, release_date, price, file, id_category } =
-      req.body;
+    const {
+      game_name,
+      description,
+      developer,
+      photos,
+      release_date,
+      price,
+      file,
+      id_category,
+    } = req.body;
 
     const existingGame = await Game.findOne({ game_name });
     if (existingGame) {
@@ -77,8 +95,16 @@ const deleteGame = async (req, res) => {
 
 const editGame = async (req, res) => {
   const { id } = req.params;
-  const { game_name, description, developer, photos, release_date, price, file, id_category } =
-    req.body; //Getting the variables
+  const {
+    game_name,
+    description,
+    developer,
+    photos,
+    release_date,
+    price,
+    file,
+    id_category,
+  } = req.body; //Getting the variables
 
   try {
     const game = await Game.findByIdAndUpdate(

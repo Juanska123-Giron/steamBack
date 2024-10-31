@@ -1,62 +1,46 @@
 import PaymentCard from "../models/paymentCard.js";
 import User from "../models/user.js";
-import validator from "validator";
+import Game from "../models/game.js"; // Asegúrate de que la ruta sea correcta
+import Stripe from "stripe";
+import dotenv from "dotenv";
+import { addToLibrary } from "./libraryController.js";
 
-const newCard = async (req, res) => {
-  const userId = req.user._id; //Extracting información from the token
-  console.log("IdUser from checkAuth", userId);
+dotenv.config();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-  const { card_number } = req.body; //extract the variables
+const processPayment = async (req, res) => {
+  const { amount, gameIds } = req.body;
+  const userId = req.user._id;
 
-  // Validate
-  if (!validator.isCreditCard(card_number)) {
-    return res.status(400).json({ msg: "Invalid credit card number" });
-  } else console.log("Proving card: ", req.body);
+  console.log("Game IDs received:", gameIds);
 
   try {
-    const newPaymentCard = new PaymentCard(req.body);
-    const savedCard = await newPaymentCard.save();
-
-    //Look for the user
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+    // Verificación de que se proporcionan gameIds válidos
+    if (!gameIds || gameIds.length === 0) {
+      return res.status(400).json({ msg: "No se proporcionaron gameIds válidos." });
     }
 
-    //asociate the card to the user logged in
-    user.payments_cards.push(savedCard._id); //pushing the info to the attribute
-    await user.save(); //update the information
+    // Verificar que los juegos existan en la base de datos
+    const games = await Game.find({ _id: { $in: gameIds } });
+    if (games.length !== gameIds.length) {
+      console.error("No se encontraron todos los juegos en la biblioteca.");
+      return res.status(404).json({ msg: "Algunos juegos no se encontraron." });
+    }
 
-    res.json({
-      msg: "Card added successfully",
-      savedCard,
-      user,
+    // Crear el PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
     });
+
+    // Añadir juegos a la biblioteca
+    await Promise.all(gameIds.map((gameId) => addToLibrary(userId, gameId)));
+
+    res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ msg: "Error creating card" });
+    console.error("Error procesando el pago:", error);
+    res.status(500).json({ msg: 'Error al procesar el pago: ' + error.message });
   }
 };
 
-const deleteCard = async (req, res) => {
-  try {
-    const card = await PaymentCard.findById(req.params.id);
-    if (!card) {
-      return res.status(404).json({
-        msj: "Card not found",
-      });
-    }
-    const deletedCard = await PaymentCard.findByIdAndDelete(req.params.id);
-    res.json({
-      msj: "Card deleted successfully",
-      deletedCard,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msj: "There was an error deleting the card",
-    });
-  }
-};
-
-export { newCard, deleteCard };
+export { processPayment };

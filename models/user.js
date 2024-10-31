@@ -39,13 +39,13 @@ const userSchema = mongoose.Schema(
     },
     cellphone_number: {
       type: Number, // In JavaScript you use Number instead of Int
-      required: true,
+      required: false,
     },
     //
     country_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Country",
-      required: true,
+      required: false,
     },
     token: {
       type: String,

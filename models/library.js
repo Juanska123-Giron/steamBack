@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const librarySchema = new mongoose.Schema(
+const librarySchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -9,9 +9,26 @@ const librarySchema = new mongoose.Schema(
     },
     games: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Game",
-        required: true,
+        gameId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Game", // Asegúrate de que tienes un modelo de juegos
+        },
+
+        title: String, // Título del juego
+        price: Number,
+        photos: [String],
+        description: String,
+        developer: String,
+        release_date: Date,
+        file: String,
+        id_category: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Category",
+        },
+        id_requirements: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Requirements",
+        },
       },
     ],
   },
@@ -21,5 +38,4 @@ const librarySchema = new mongoose.Schema(
 );
 
 const Library = mongoose.model("Library", librarySchema);
-
 export default Library;

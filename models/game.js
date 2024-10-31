@@ -2,21 +2,16 @@ import mongoose from "mongoose";
 
 const gameSchema = new mongoose.Schema(
   {
-    //   id_requirments: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "Requirments",
-    //     required: true,
-    //   },
+    id_requirements: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Requirements",
+      required: false,
+    },
 
     id_category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: true,
-    },
-    id_requirements: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Requirements",
-      required: true
     },
     game_name: {
       type: String,
@@ -34,7 +29,7 @@ const gameSchema = new mongoose.Schema(
       trim: true,
     },
     photos: {
-      type: [String],
+      type: [String], //To use cloud, importing images with URLs
       required: true,
     },
     release_date: {

@@ -12,6 +12,7 @@ const checkAuth = async (req, res, next) => {
       console.log(req.user);
       return next();
     } catch (error) {
+      console.error("Token verification error:", error.message);
       return res.status(401).json({ msg: "Invalid token" });
     }
   } else {

@@ -8,7 +8,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import countryRoutes from "./routes/countryRoutes.js";
 import requirementsRoutes from "./routes/requirementsRoutes.js";
-import libraryRoutes from "./routes/libraryRoutes.js"
+import libraryRoutes from "./routes/libraryRoutes.js";
 import cors from "cors";
 5;
 const app = express();

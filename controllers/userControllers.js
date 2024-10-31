@@ -13,7 +13,7 @@ const sendConfirmationEmail = async (user) => {
     },
   });
 
-  const confirmUrl = `http://localhost:3000/api/users/confirm/${user.token}`; //We have to change this server when its deployed
+  const confirmUrl = `http://192.168.1.111:3000/api/users/confirm/${user.token}`; //We have to change this server when its deployed
   //Pending to edit the email estructure
   const mailOptions = {
     from: '"Steam V1" <steamv1@teamSteam.com>', //
@@ -41,14 +41,7 @@ const newUser = async (req, res) => {
     return res.status(400).json({ msg: error.message });
   }
 
-  const { country_id } = req.body;
-  //console.log("Selected Country:", country_id);
-  const availableCountry = await Country.findById(country_id);
-  //console.log("Validated:", availableCountry);
-  if (!availableCountry) {
-    const error = new Error("You must select an exising country_Id");
-    return res.status(400).json({ msg: error.message });
-  }
+  
 
   try {
     const user = new User(req.body);

@@ -54,22 +54,20 @@ const getUserLibrary = async (req, res) => {
   try {
     const userId = req.user._id;
     const library = await Library.findOne({ user: userId }).populate({
-      path: "games.gameId", // Asegúrate de que el path corresponde a la propiedad de tu modelo
-      select: "game_name price photos", // Selecciona solo los campos necesarios
+      path: "games.gameId",
+      select: "game_name price photos",
     });
 
     if (!library) {
-      return res
-        .status(404)
-        .json({ msg: "No se encontró la biblioteca del usuario" });
+      return res.status(404).json({ msg: "No se encontró la biblioteca del usuario" });
     }
 
+    console.log('Library data:', library); // Agrega esto para verificar la estructura
     res.json(library);
   } catch (error) {
-    res
-      .status(500)
-      .json({ msg: "Error al obtener la biblioteca", error: error.message });
+    res.status(500).json({ msg: "Error al obtener la biblioteca", error: error.message });
   }
 };
+
 
 export { addToLibrary, getUserLibrary };

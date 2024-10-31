@@ -1,28 +1,5 @@
 import Requirements from "../models/requirements.js";
 
-const getRequirement = async (req, res) => {
-  const gameId = req.params.id;
-  try {
-    const requirement = await Requirements.findById(gameId);
-
-    if (!requirement) {
-      return res.status(404).json({
-        msj: "Requirement not found",
-      });
-    }
-
-    res.json({
-      msj: "Requirement found successfully",
-      requirement,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      msj: "Error retrieving the requirement",
-    });
-  }
-};
-
 //Post request
 
 const newRequirement = async (req, res) => {
@@ -43,20 +20,20 @@ const newRequirement = async (req, res) => {
 
     //Respuesta exitosa
     res.status(201).json({
-      mensaje: "Requerimients created successfully",
+      msj: "Requerimients created successfully",
       savedRequirements,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      mensaje: "Error creating the requirement",
+      msj: "Error creating the requirement",
     });
   }
 };
 
 const deleteRequirement = async (req, res) => {
   const idRequirement = req.params.id;
-  console.log("REQUIREMENT: ", idRequirement);
+  //console.log("REQUIREMENT: ", idRequirement);
   try {
     const requirement = await Requirements.findById(req.params.id);
 
@@ -78,4 +55,39 @@ const deleteRequirement = async (req, res) => {
   }
 };
 
-export { newRequirement, deleteRequirement, getRequirement };
+const editRequirement = async (req, res) => {
+  const { id } = req.params;
+  const { platform, processor, memory, graphics, storage } = req.body;
+
+  try {
+    const requirement = await Requirements.findByIdAndUpdate(
+      id,
+      {
+        platform,
+        processor,
+        memory,
+        graphics,
+        storage,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!requirement) {
+      return res.status(404).json({ msj: "Requirement not found" });
+    }
+    res.status(200).json({
+      msj: "Requirement updated successfully",
+      requirement,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msj: "Error updating the requirement",
+    });
+  }
+};
+
+export { newRequirement, deleteRequirement, editRequirement };

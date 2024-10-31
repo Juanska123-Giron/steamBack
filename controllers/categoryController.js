@@ -8,7 +8,7 @@ const allCategory = async (req, res) => {
     console.error(error);
     res.status(500).json({ msg: "There was an error getting the categories" });
   }
-}
+};
 
 const newCategory = async (req, res) => {
   //Avoid double inserts

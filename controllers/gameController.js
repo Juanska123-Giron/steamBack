@@ -1,4 +1,5 @@
 import Game from "../models/game.js";
+import Requirements from "../models/requirements.js";
 
 const getAllGames = async (req, res) => {
   try {
@@ -27,7 +28,7 @@ const newGame = async (req, res) => {
 
     const existingGame = await Game.findOne({ game_name });
     if (existingGame) {
-      return res.status(400).json({ mensaje: "Game already in system" });
+      return res.status(400).json({ msj: "Game already in system" });
     }
 
     // Create a new (Game)
@@ -45,13 +46,13 @@ const newGame = async (req, res) => {
     await game.save();
 
     res.status(201).json({
-      mensaje: "Game created successfully",
+      msj: "Game created successfully",
       game,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      mensaje: "Error fetching the data",
+      msj: "Error fetching the data",
     });
   }
 };
@@ -62,14 +63,14 @@ const deleteGame = async (req, res) => {
   try {
     const game = await Game.findByIdAndDelete(id);
     if (!game) {
-      return res.status(404).json({ mensaje: "Game not found" });
+      return res.status(404).json({ msj: "Game not found" });
     }
 
-    res.status(200).json({ mensaje: "Game deleted successfully" });
+    res.status(200).json({ msj: "Game deleted successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      mensaje: "Error deleting the game",
+      msj: "Error deleting the game",
     });
   }
 };
@@ -96,21 +97,57 @@ const editGame = async (req, res) => {
     );
 
     if (!game) {
-      return res.status(404).json({ mensaje: "Game not found" });
+      return res.status(404).json({ msj: "Game not found" });
     }
 
     res.status(200).json({
-      mensaje: "Game updated successfully",
+      msj: "Game updated successfully",
       game,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      mensaje: "Error updating the game",
+      msj: "Error updating the game",
     });
   }
 };
 
-const addRequirementsToGame = (req, res) => {};
+const addRequirementsToGame = async (req, res) => {
+  const { id_game } = req.params; // id from the game
+  const { id_requirements } = req.body; // This goes in the request body
 
-export { getAllGames, newGame, deleteGame, editGame };
+  try {
+    // Verify tehe games exists
+    const game = await Game.findById(id_game);
+
+    if (!game) {
+      return res.status(404).json({ msg: "Game not found" });
+    }
+
+    // Verify the requirements exists
+    const requirements = await Requirements.findById(id_requirements);
+
+    if (!requirements) {
+      return res.status(404).json({ msg: "Requirements not found" });
+    }
+
+    // Assign the requirements as an attribute to the game
+    game.id_requirements = id_requirements;
+
+    // Saving the changes
+    await game.save();
+
+    // Successfully done
+    res.status(200).json({
+      msg: "Requirements added to game successfully",
+      game,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      msg: "Error adding requirements to the game",
+    });
+  }
+};
+
+export { getAllGames, newGame, deleteGame, editGame, addRequirementsToGame };

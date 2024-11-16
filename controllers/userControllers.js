@@ -6,24 +6,24 @@ import nodemailer from "nodemailer";
 
 const sendConfirmationEmail = async (user) => {
   const transporter = nodemailer.createTransport({
-    service: "Gmail", // service to send confirmation email
+    service: "Gmail", // servicio para enviar el correo de confirmación
     auth: {
-      user: process.env.EMAIL_USER, // My personal email address --> We have to create a Steam account
-      pass: process.env.EMAIL_PASS, // Password
+      user: process.env.EMAIL_USER, // Mi correo personal --> Debemos crear una cuenta de Steam
+      pass: process.env.EMAIL_PASS, // Contraseña
     },
   });
 
-  const confirmUrl = `http://localhost:3000/api/users/confirm/${user.token}`; //We have to change this server when its deployed
-  //Pending to edit the email estructure
+  const confirmUrl = `https://prod.supersteam.pro/api/users/confirm/${user.token}`; // Cambiaremos este servidor cuando se despliegue
+  // Pendiente de editar la estructura del correo
   const mailOptions = {
-    from: '"Steam V1" <steamv1@teamSteam.com>', //
-    to: user.email, // user email
-    subject: "Please confirm your account",
+    from: '"Steam V1" <steamv1@teamSteam.com>',
+    to: user.email, // correo del usuario
+    subject: "Por favor confirma tu cuenta",
     html: `
-        <h2>Hello, ${user.user_name}</h2>
-        <p>Thank you for registering. Please confirm your account by clicking the button below:</p>
-        <a href="${confirmUrl}" style="padding: 10px 20px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;">Confirm Account</a>
-        <p>If you can't click the button, copy and paste the following link into your browser:</p>
+        <h2>Hola, ${user.user_name}</h2>
+        <p>Gracias por registrarte. Por favor confirma tu cuenta haciendo clic en el botón de abajo:</p>
+        <a href="${confirmUrl}" style="padding: 10px 20px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;">Confirmar Cuenta</a>
+        <p>Si no puedes hacer clic en el botón, copia y pega el siguiente enlace en tu navegador:</p>
         <p><a href="${confirmUrl}">${confirmUrl}</a></p>
       `,
   };
@@ -32,21 +32,19 @@ const sendConfirmationEmail = async (user) => {
 };
 
 const newUser = async (req, res) => {
-  //Avoid double inserts
+  // Evitar registros duplicados
   const { email } = req.body;
   const userExits = await User.findOne({ email });
 
   if (userExits) {
-    const error = new Error("User already exists");
+    const error = new Error("Ya hay un usuario con ese correo");
     return res.status(400).json({ msg: error.message });
   }
 
   const { country_id } = req.body;
-  //console.log("Selected Country:", country_id);
   const availableCountry = await Country.findById(country_id);
-  //console.log("Validated:", availableCountry);
   if (!availableCountry) {
-    const error = new Error("You must select an exising country_Id");
+    const error = new Error("Debes seleccionar un país existente");
     return res.status(400).json({ msg: error.message });
   }
 
@@ -55,15 +53,15 @@ const newUser = async (req, res) => {
     user.token = generateId();
     const userCreated = await user.save();
 
-    // send the email
+    // enviar el correo de confirmación
     await sendConfirmationEmail(user);
 
     res.json({
-      msg: "User created successfully. Please check your email to confirm your account.",
+      msg: "Usuario creado exitosamente. Revisa tu correo para la confirmación de tu cuenta",
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ msg: "There was an error creating the user" });
+    res.status(500).json({ msg: "Hubo un error al crear el usuario" });
   }
 };
 
@@ -71,23 +69,23 @@ const authenticateUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // user exits
+    // Verificar si el usuario existe
     const user = await User.findOne({ email });
 
     if (!user) {
-      const error = new Error("No user found with that email");
+      const error = new Error("No se encontró un usuario con ese correo electrónico");
       return res.status(404).json({ msg: error.message });
     }
 
-    // Verify if its an valid account
+    // Verificar si la cuenta está confirmada
     if (!user.confirmed) {
       const error = new Error(
-        "Your account is not confirmed yet. Please check your email to confirm."
+        "Tu cuenta aún no está confirmada. Por favor, revisa tu correo electrónico para confirmarla."
       );
       return res.status(403).json({ msg: error.message });
     }
 
-    // Verify the password
+    // Verificar la contraseña
     const isPasswordCorrect = await user.verifyPassword(password);
     if (isPasswordCorrect) {
       res.json({
@@ -97,28 +95,28 @@ const authenticateUser = async (req, res) => {
         token: generateJWT(user._id),
       });
     } else {
-      const error = new Error("Incorrect password. Please try again.");
+      const error = new Error("Contraseña incorrecta. Por favor, inténtalo de nuevo.");
       return res.status(403).json({ msg: error.message });
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ msg: "An error occurred while trying to authenticate the user" });
+    return res.status(500).json({ msg: "Ocurrió un error al intentar autenticar al usuario" });
   }
 };
 
 const confirmAccount = async (req, res) => {
-  //This a GET request, thas why we use 'req.params'
+  // Esta es una solicitud GET, por eso usamos 'req.params'
   const { token } = req.params;
   const userToConfirm = await User.findOne({ token });
   if (!userToConfirm) {
-    const error = new Error("No valid token");
+    const error = new Error("Token no válido");
     return res.status(403).json({ msg: error.message });
   }
   try {
     userToConfirm.confirmed = true;
     userToConfirm.token = "";
-    await userToConfirm.save(); //Save changes
-    res.json({ msg: "User confirmed successfully" });
+    await userToConfirm.save(); // Guardar los cambios
+    res.json({ msg: "Usuario confirmado exitosamente" });
     console.log(userToConfirm);
   } catch (error) {
     console.log(error);
@@ -129,14 +127,14 @@ const recoverPassword = async (req, res) => {
   const { email } = req.body;
   const userFound = await User.findOne({ email });
   if (!userFound) {
-    const error = new Error("User does not exist");
+    const error = new Error("El usuario no existe");
     return res.status(404).json({ msg: error.message });
   }
   try {
     userFound.token = generateId();
     console.log(userFound);
     await userFound.save();
-    res.json({ msg: "He have sent you an email with the instructions and the token" }); //We have to create a page to change the password, gotta use the nodemailer to send the new token
+    res.json({ msg: "Te hemos enviado un correo con las instrucciones y el token" }); // Debemos crear una página para cambiar la contraseña, debemos usar nodemailer para enviar el nuevo token
   } catch (error) {
     console.log(error);
   }
@@ -146,9 +144,9 @@ const validateToken = async (req, res) => {
   const { token } = req.params;
   const validToken = await User.findOne({ token });
   if (validToken) {
-    res.json({ msg: "Valid token, user exists" });
+    res.json({ msg: "Token válido, el usuario existe" });
   } else {
-    const error = new Error("Not a valid token");
+    const error = new Error("Token no válido");
     return res.status(404).json({ msg: error.message });
   }
 };
@@ -162,12 +160,12 @@ const changePassword = async (req, res) => {
     user.token = "";
     try {
       await user.save();
-      res.json({ msg: "Password modified correctly" });
+      res.json({ msg: "Contraseña modificada correctamente" });
     } catch (error) {
       console.log(error);
     }
   } else {
-    const error = new Error("No valid token");
+    const error = new Error("Token no válido");
     return res.status(404).json({ msg: error.message });
   }
 };
@@ -178,13 +176,13 @@ const getProfile = async (req, res) => {
     const user = await User.findById(id);
 
     if (!user) {
-      const error = new Error("User not found");
+      const error = new Error("Usuario no encontrado");
       return res.status(404).json({ msg: error.message });
     }
     res.json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ msg: "Error getting the user profile" });
+    res.status(500).json({ msg: "Error al obtener el perfil del usuario" });
   }
 };
 
@@ -193,18 +191,18 @@ const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({
-        msj: "User to delete not found",
+        msg: "Usuario a eliminar no encontrado",
       });
     }
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     res.json({
-      mensaje: "User deleted successfully",
+      msg: "Usuario eliminado exitosamente",
       deletedUser,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      mensaje: "There was an error deleting the user",
+      msg: "Hubo un error al eliminar el usuario",
     });
   }
 };

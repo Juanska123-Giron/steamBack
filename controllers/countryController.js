@@ -46,5 +46,13 @@ const deleteCountry = async (req, res) => {
     });
   }
 };
-
-export { newCountry, deleteCountry };
+const fetchCountries = async (req, res) => {
+  try {
+    const countries = await Country.find();
+    res.json(countries);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Error fetching countries" });
+  }
+};
+export { newCountry, deleteCountry, fetchCountries };

@@ -32,36 +32,35 @@ const sendConfirmationEmail = async (user) => {
 };
 
 const newUser = async (req, res) => {
-  // Evitar registros duplicados
-  const { email } = req.body;
-  const userExits = await User.findOne({ email });
+  const { email, country_id } = req.body;
 
+  // Verificar si el correo ya está registrado
+  const userExits = await User.findOne({ email });
   if (userExits) {
-    const error = new Error("Ya hay un usuario con ese correo");
-    return res.status(400).json({ msg: error.message });
+    return res.status(400).json({ msg: "Ya hay un usuario con ese correo", field: "email" });
   }
 
-  const { country_id } = req.body;
+  // Verificar si el país existe
   const availableCountry = await Country.findById(country_id);
   if (!availableCountry) {
-    const error = new Error("Debes seleccionar un país existente");
-    return res.status(400).json({ msg: error.message });
+    return res
+      .status(400)
+      .json({ msg: "Debes seleccionar un país existente", field: "country_id" });
   }
 
   try {
     const user = new User(req.body);
     user.token = generateId();
-    const userCreated = await user.save();
+    await user.save();
 
-    // enviar el correo de confirmación
     await sendConfirmationEmail(user);
 
-    res.json({
-      msg: "Usuario creado exitosamente. Revisa tu correo para la confirmación de tu cuenta",
+    return res.json({
+      msg: "Usuario creado exitosamente. Revisa tu correo para confirmar tu cuenta",
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ msg: "Hubo un error al crear el usuario" });
+    console.error(error);
+    return res.status(500).json({ msg: "Error al crear el usuario" });
   }
 };
 
